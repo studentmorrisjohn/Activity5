@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Activity 4 & 5</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="bg-div">
+        <h1>Welcome to My Sensor Shit</h1>
+
+        <div class="section-div">
+            <div class="sensor-div">
+                <h1>Piezo</h1>
+                <div class="pulse" id="pulseDiv">
+                    <span style="--i:0;"></span>
+                    <span style="--i:1;"></span>
+                    <span style="--i:2;"></span>
+                    <span style="--i:3;"></span>
+                </div>
+                <h1 id="scaleValue1">1</h1>
+                <h1>volts</h1>
+            </div>
+            <div class="sensor-div">
+                <h1>Heart Sensor</h1>
+                <div class="heart-container">
+                    <img class="pulse-heart" src="heart.png" alt="Pulsing Heart">
+                </div>
+                <h1 id="scaleValue2">1</h1>
+                <h1>Bpm</h1>
+            </div>
+            <div class="sensor-div">
+                <h1>Water Sensor</h1>
+                <div class="box">
+                </div>
+                <h1 id="scaleValue3">1</h1>
+                <h1>Unit</h1>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVLGOorfEhyGb1mqpBpbh7XZivNX4XLXY",
+            authDomain: "group-5---cloud-database.firebaseapp.com",
+            databaseURL: "https://group-5---cloud-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "group-5---cloud-database",
+            storageBucket: "group-5---cloud-database.appspot.com",
+            messagingSenderId: "503419684152",
+            appId: "1:503419684152:web:adf1d4f32eedd3d581adcd"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const scaleValueRef1 = ref(database, 'readings/sensor1');
+        const scaleValueRef2 = ref(database, 'readings/sensor2');
+        const scaleValueRef3 = ref(database, 'readings/sensor3');
+
+        onValue(scaleValueRef1, (snapshot) => {
+            const value = snapshot.val();
+            document.getElementById('scaleValue1').textContent = value;
+            updateAnimationScale(value);
+        });
+        onValue(scaleValueRef2, (snapshot) => {
+            const value = snapshot.val();
+            document.getElementById('scaleValue2').textContent = value;
+            updateAnimationDuration(value);
+        });
+        onValue(scaleValueRef3, (snapshot) => {
+            const value = snapshot.val();
+            document.getElementById('scaleValue3').textContent = value;
+        });
+
+        // scaleValue1 Animation Maffs
+        function updateAnimationScale(value) {
+            const pulseSpans = document.querySelectorAll('.pulse span');
+            if (pulseSpans) {
+                const scaleFactor = calculateScaleFactor(value);
+                pulseSpans.forEach((span, index) => {
+                    span.style.setProperty('--scaleFactor', scaleFactor);
+                });
+            }
+        }
+
+        function calculateScaleFactor(value) {
+            const minScale = 1.5;
+            const maxScale = 3;
+            const scaleFactor = minScale + (maxScale - minScale) * (value / 100);
+            return scaleFactor;
+        }
+
+        const value = 50;
+        updateAnimationScale(value);
+
+        //scaleValue2 Animation Maffs   
+        function updateAnimationDuration(value) {
+            const pulseHeart = document.querySelector('.pulse-heart');
+            if (pulseHeart) {
+                if (value === 0) {
+                    pulseHeart.style.animationDuration = '0s';
+                } else {
+                    const minDuration = 1;
+                    const maxDuration = .01;
+                    const scaledDuration = minDuration + (value / 220) * (maxDuration - minDuration);
+                    pulseHeart.style.animationDuration = scaledDuration + 's';
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
