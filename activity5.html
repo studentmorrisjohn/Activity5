@@ -8,7 +8,7 @@
 
 <body>
     <div class="bg-div">
-        <h1>Welcome to My Sensor Shit</h1>
+        <h1>Activity 4 & 5</h1>
 
         <div class="section-div">
             <div class="sensor-div">
@@ -19,7 +19,7 @@
                     <span style="--i:2;"></span>
                     <span style="--i:3;"></span>
                 </div>
-                <h1 id="scaleValue1">1</h1>
+                <h1 id="scaleValue1"></h1>
                 <h1>volts</h1>
             </div>
             <div class="sensor-div">
@@ -27,15 +27,15 @@
                 <div class="heart-container">
                     <img class="pulse-heart" src="heart.png" alt="Pulsing Heart">
                 </div>
-                <h1 id="scaleValue2">1</h1>
+                <h1 id="scaleValue2"></h1>
                 <h1>Bpm</h1>
             </div>
             <div class="sensor-div">
-                <h1>Water Sensor</h1>
+                <h1>IR Sensor</h1>
                 <div class="box">
+                    <img class="ir-sensor" src="false.png">
                 </div>
-                <h1 id="scaleValue3">1</h1>
-                <h1>Unit</h1>
+                <h1 id="scaleValue3"></h1>
             </div>
         </div>
     </div>
@@ -55,9 +55,9 @@
         };
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const scaleValueRef1 = ref(database, 'readings/sensor1');
+        const scaleValueRef1 = ref(database, 'readings/piezo');
         const scaleValueRef2 = ref(database, 'readings/sensor2');
-        const scaleValueRef3 = ref(database, 'readings/sensor3');
+        const scaleValueRef3 = ref(database, 'readings/proximity');
 
         onValue(scaleValueRef1, (snapshot) => {
             const value = snapshot.val();
@@ -86,14 +86,30 @@
         }
 
         function calculateScaleFactor(value) {
-            const minScale = 1.5;
+            const minScale = 1;
             const maxScale = 3;
-            const scaleFactor = minScale + (maxScale - minScale) * (value / 100);
+            const scaleFactor = minScale + (maxScale - minScale) * (value / 2000);
             return scaleFactor;
         }
 
         const value = 50;
         updateAnimationScale(value);
+
+
+        let previousValue = null;
+
+        onValue(scaleValueRef1, (snapshot) => {
+            const value = snapshot.val();
+            document.getElementById('scaleValue1').textContent = value;
+
+            if (value !== previousValue) {
+                updateAnimationScale(value);
+            }
+
+            previousValue = value;
+        });
+
+        let isAnimationPlayed = false;
 
         //scaleValue2 Animation Maffs   
         function updateAnimationDuration(value) {
@@ -106,6 +122,24 @@
                     const maxDuration = .01;
                     const scaledDuration = minDuration + (value / 220) * (maxDuration - minDuration);
                     pulseHeart.style.animationDuration = scaledDuration + 's';
+                }
+            }
+        }
+
+        //scaleValue3 Change PNG
+        onValue(scaleValueRef3, (snapshot) => {
+            const value = snapshot.val();
+            document.getElementById('scaleValue3').textContent = value;
+            updateIRSensorImage(value);
+        });
+
+        function updateIRSensorImage(value) {
+            const irSensorImage = document.querySelector('.ir-sensor');
+            if (irSensorImage) {
+                if (value) {
+                    irSensorImage.src = 'true.png';
+                } else {
+                    irSensorImage.src = 'false.png';
                 }
             }
         }
